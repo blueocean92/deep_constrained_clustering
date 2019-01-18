@@ -4,7 +4,7 @@
 
 ```
 git clone https://github.com/blueocean92/deep_constrained_clustering
-cd deep_constrained_clustering/experiments
+cd deep_constrained_clustering
 ```
 
 
@@ -41,6 +41,10 @@ sh download_model.sh
 
 ```
 sh download_data.sh
+```
+
+```
+cd deep_constrained_clustering/experiments
 ```
 
 While in `deep_constrained_clustering/experiments` folder:
