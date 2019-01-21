@@ -1,6 +1,8 @@
+# ICML'19 submission: Deep Constrained Clustering - Algorithms and Advances
+
 ## Installation
 
-### Step 1: Clone the Code from Github
+#### Step 1: Clone the Code from Github
 
 ```
 git clone https://github.com/blueocean92/deep_constrained_clustering
@@ -10,7 +12,7 @@ cd deep_constrained_clustering
 
 
 
-### Step 2: Install Requirements
+#### Step 2: Install Requirements
 
 **Python**: see [`requirement.txt`](https://github.com/blueocean92/deep_constrained_clustering/blob/master/requirements.txt) for complete list of used packages. We recommend doing a clean installation of requirements using virtualenv:
 ```bash
@@ -71,8 +73,6 @@ To run the instance difficulty constrained clustering, do:
 python run_DCC_instance.py --data $DATA
 ```
 
-For the `--data` flag which specifies the data set being used. The options are "MNIST", "Fashion" and "Reuters".
-
 ###### Option 3: Run Demo Triplets Constraints Script
 
 To run the triplets constrained clustering, do:
@@ -80,7 +80,6 @@ To run the triplets constrained clustering, do:
 python run_DCC_triplets.py --data $DATA
 ```
 
-For the `--data` flag which specifies the data set being used. The options are "MNIST", "Fashion".
 
 ###### Option 4: Run Demo Global Constraints Script
 
@@ -89,7 +88,6 @@ To run the global size constrained clustering, do:
 python run_DCC_global.py --data $DATA
 ```
 
-For the `--data` flag which specifies the data set being used. The options are "MNIST", "Fashion".
 
 ###### Option 5: Run Demo Improved DEC Script
 
@@ -98,6 +96,5 @@ To run the baseline Improved DEC, do:
 python run_improved_DEC.py --data $DATA
 ```
 
-For the `--data` flag which specifies the data set being used. The options are "MNIST", "Fashion" and "Reuters".
 
 
