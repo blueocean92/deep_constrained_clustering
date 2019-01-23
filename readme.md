@@ -1,4 +1,4 @@
-# ICML'19 submission: Deep Constrained Clustering - Algorithms and Advances
+# Code for ICML'19 submission: Deep Constrained Clustering - Algorithms and Advances
 
 ## Installation
 
