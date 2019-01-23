@@ -46,7 +46,7 @@ sh download_data.sh
 ```
 
 ```
-cd deep_constrained_clustering/experiments
+cd experiments/
 ```
 
 While in `deep_constrained_clustering/experiments` folder:
