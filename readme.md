@@ -54,16 +54,16 @@ While in `deep_constrained_clustering/experiments` folder:
 
 ###### Option 1: Run Demo Pairwise Constraints Script
 
-To run the pairwise constrained clustering using pre-trained weights(AE features), do:
+To run the pairwise constrained clustering using pre-trained weights (AE features, 6000 constraints), do:
 ```bash
 python run_DCC_pairwise.py --data $DATA
 ```
 
 For the `--data` flag which specifies the data set being used. The options are "MNIST", "Fashion" and "Reuters".
 
-To run the pairwise constrained clustering from raw features(end-to-end learning), do:
+To run the pairwise constrained clustering from raw features, do:
 ```bash
-python run_DCC_pairwise.py --data $DATA --use_pretrain False
+python run_DCC_pairwise.py --data $DATA --use_pretrain 'False'
 ```
 
 ###### Option 2: Run Demo Instance Constraints Script
@@ -75,7 +75,7 @@ python run_DCC_instance.py --data $DATA
 
 ###### Option 3: Run Demo Triplets Constraints Script
 
-To run the triplets constrained clustering, do:
+To run the triplets constrained clustering (6000 constraints), do:
 ```bash
 python run_DCC_triplets.py --data $DATA
 ```
