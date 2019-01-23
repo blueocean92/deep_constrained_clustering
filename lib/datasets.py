@@ -1,7 +1,3 @@
-"""
-Acknowledgement: this file is modified based on the work 
-from https://github.com/eelxpeng/dec-pytorch
-"""
 import os
 import os.path
 import errno
