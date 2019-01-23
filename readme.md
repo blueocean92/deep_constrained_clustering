@@ -18,7 +18,7 @@ cd deep_constrained_clustering
 ```bash
 conda create -n testenv python=3.6
 source activate testenv
-pip install -r requirement.txt 
+pip install -r requirements.txt 
 ```
 
 If you dont want to do the above clean installation via virtualenv, you could also directly install the requirements through:
