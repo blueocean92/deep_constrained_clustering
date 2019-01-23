@@ -23,7 +23,7 @@ pip install -r requirements.txt
 
 If you dont want to do the above clean installation via virtualenv, you could also directly install the requirements through:
 ```bash
-pip install -r requirement.txt --no-index
+pip install -r requirements.txt --no-index
 ```
 
 **PyTorch**: Note that you need [PyTorch](https://pytorch.org/). We used Version 1.0.0 If you use the above virtualenv, PyTorch will be automatically installed therein. 
