@@ -1,3 +1,7 @@
+"""
+Acknowledgement: this file is modified based on the work 
+from https://github.com/eelxpeng/dec-pytorch
+"""
 import torch
 import torch.nn as nn
 from torch.nn import Parameter
