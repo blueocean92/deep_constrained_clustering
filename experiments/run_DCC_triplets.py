@@ -9,7 +9,7 @@ from lib.utils import generate_mnist_triplets
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Triplet MNIST Example')
+    parser = argparse.ArgumentParser(description='Triplet Constraints Example')
     parser.add_argument('--lr', type=float, default=0.001, metavar='N',
                         help='learning rate for training (default: 0.001)')
     parser.add_argument('--batch-size', type=int, default=256, metavar='N',
@@ -24,15 +24,15 @@ if __name__ == "__main__":
     parser.add_argument('--use_pretrain', type=bool, default=True)
     args = parser.parse_args()
 
-    # according to the released code, mnist data is multiplied by 0.02
-    # 255*0.02 = 5.1. transforms.ToTensor() coverts 255 -> 1.0
-    # so add a customized Scale transform to multiple by 5.1
+    # Load data
     mnist_train = MNIST('./dataset/mnist', train=True, download=True)
     mnist_test = MNIST('./dataset/mnist', train=False)
     X = mnist_train.train_data
     y = mnist_train.train_labels
     test_X = mnist_test.test_data
     test_y = mnist_test.test_labels
+    
+    # Set parameters
     ml_penalty, cl_penalty = 0.1, 1
     if args.data == "Fashion":
         fashionmnist_train = FashionMNIST('./dataset/fashion_mnist', train=True, download=True)
@@ -43,28 +43,29 @@ if __name__ == "__main__":
         test_y = fashionmnist_test.test_labels
         args.pretrain="../model/fashion_sdae_weights.pt"
         ml_penalty = 1
-
-    # model initialization
     idec = IDEC(input_dim=784, z_dim=10, n_clusters=10,
                 encodeLayer=[500, 500, 2000], decodeLayer=[2000, 500, 500], activation="relu", dropout=0)
-    print(idec)
-
-    # Prepare constraints
-    ml_ind1, ml_ind2, cl_ind1, cl_ind2 = np.array([]), np.array([]), np.array([]), np.array([])
-    anchor, positive, negative = generate_mnist_triplets(y, 3600)
     if args.use_pretrain:
         idec.load_model(args.pretrain)
+    
+    # Print Network Structure
+    print(idec)
+
+    # Construct constraints
+    ml_ind1, ml_ind2, cl_ind1, cl_ind2 = np.array([]), np.array([]), np.array([]), np.array([])
+    anchor, positive, negative = generate_mnist_triplets(y, 3600)
     instance_guidance = torch.zeros(X.shape[0]).cuda()
     use_global = False
 
-    # Train the constrained clustering model
+    # Train the network
     train_acc, train_nmi, epo = idec.fit(anchor, positive, negative, ml_ind1, ml_ind2, cl_ind1, cl_ind2, instance_guidance, use_global,  ml_penalty, cl_penalty, X, y,
                              lr=args.lr, batch_size=args.batch_size, num_epochs=args.epochs,
                              update_interval=args.update_interval, tol=2*1e-3)
 
-    # Test on the test data
+    # Make predictions
     test_acc, test_nmi = idec.predict(test_X, test_y)
 
+    # Print the result
     print("ACC:", train_acc)
     print("NMI;", train_nmi)
     print("Epochs:", epo)
