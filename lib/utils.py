@@ -86,14 +86,16 @@ def acc(y_true, y_pred):
 
 def detect_wrong(y_true, y_pred):
     """
-    Calculate clustering accuracy. Require scikit-learn installed
-
+    Simulating instance difficulty constraints. Require scikit-learn installed
+    
     # Arguments
         y: true labels, numpy.array with shape `(n_samples,)`
         y_pred: predicted labels, numpy.array with shape `(n_samples,)`
 
     # Return
-        hard examples which kmeans fails + easy examples
+        A mask vector M =  1xn which indicates the difficulty degree
+        We treat k-means as weak learner and set low confidence (0.1) for incorrect instances.
+        Set high confidence (1) for correct instances.
     """
     y_true = y_true.astype(np.int64)
     assert y_pred.size == y_true.size
@@ -116,6 +118,19 @@ def detect_wrong(y_true, y_pred):
 
 
 def transitive_closure(ml_ind1, ml_ind2, cl_ind1, cl_ind2, n):
+    """
+    This function calculate the total transtive closure for must-links and the full entailment
+    for cannot-links. 
+    
+    # Arguments
+        ml_ind1, ml_ind2 = instances within a pair of must-link constraints
+        cl_ind1, cl_ind2 = instances within a pair of cannot-link constraints
+        n = total training instance number
+
+    # Return
+        transtive closure (must-links)
+        entailment of cannot-links
+    """
     ml_graph = dict()
     cl_graph = dict()
     for i in range(n):
@@ -181,6 +196,9 @@ def transitive_closure(ml_ind1, ml_ind2, cl_ind1, cl_ind2, n):
 
 
 def generate_random_pair(y, num):
+    """
+    Generate random pairwise constraints.
+    """
     ml_ind1, ml_ind2 = [], []
     cl_ind1, cl_ind2 = [], []
     y = y.to(torch.device("cpu"))
@@ -201,6 +219,12 @@ def generate_random_pair(y, num):
 
 
 def generate_mnist_triplets(y, num):
+    """
+    Generate random triplet constraints
+    """
+    # To download the trusted_embedding for mnist data, run the script download_model.sh
+    # Or you can create your own truseted embedding by running our pairwise constraints model
+    # with 100000 randomly generated constraints.
     mnist_embedding = np.load("../model/mnist_triplet_embedding.npy")
     anchor_inds, pos_inds, neg_inds = [], [], []
     while num > 0:
@@ -220,6 +244,12 @@ def generate_mnist_triplets(y, num):
 
 
 def generate_triplet_constraints_continuous(y, num):
+    """
+    Generate random triplet constraints
+    """
+    # To download the trusted_embedding for mnist data, run the script download_model.sh
+    # Or you can create your own truseted embedding by running our pairwise constraints model
+    # with 100000 randomly generated constraints.
     fashion_embedding = np.load("../model/fashion_triplet_embedding.npy")
     anchor_inds, pos_inds, neg_inds = [], [], []
     while num > 0:
