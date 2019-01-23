@@ -5,7 +5,7 @@ import numpy as np
 import argparse
 from lib.dcc import IDEC
 from lib.datasets import MNIST, FashionMNIST
-from lib.utils import generate_mnist_triplets
+from lib.utils import generate_mnist_triplets, generate_triplet_constraints_continuous
 
 
 if __name__ == "__main__":
@@ -53,7 +53,10 @@ if __name__ == "__main__":
 
     # Construct constraints
     ml_ind1, ml_ind2, cl_ind1, cl_ind2 = np.array([]), np.array([]), np.array([]), np.array([])
-    anchor, positive, negative = generate_mnist_triplets(y, 6000)
+    if args.data != "Fashion":
+        anchor, positive, negative = generate_mnist_triplets(y, 6000)
+    else:
+        anchor, positive, negative = generate_triplet_constraints_continuous(y,6000)
     instance_guidance = torch.zeros(X.shape[0]).cuda()
     use_global = False
 
