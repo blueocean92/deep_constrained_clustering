@@ -25,16 +25,17 @@ if __name__ == "__main__":
     parser.add_argument('--use_pretrain', type=bool, default=True)
     args = parser.parse_args()
 
-    # according to the released code, mnist data is multiplied by 0.02
-    # 255*0.02 = 5.1. transforms.ToTensor() coverts 255 -> 1.0
-    # so add a customized Scale transform to multiple by 5.1
+    # Load data
     mnist_train = MNIST('./dataset/mnist', train=True, download=True)
     mnist_test = MNIST('./dataset/mnist', train=False)
     X = mnist_train.train_data
     y = mnist_train.train_labels
     test_X = mnist_test.test_data
     test_y = mnist_test.test_labels
+    
+    # Set parameters
     ml_penalty, cl_penalty = 0.1, 1
+    
     idec = IDEC(input_dim=784, z_dim=10, n_clusters=10,
                 encodeLayer=[500, 500, 2000], decodeLayer=[2000, 500, 500], activation="relu", dropout=0)
     if args.data == "Fashion":
@@ -56,27 +57,34 @@ if __name__ == "__main__":
         args.pretrain="../model/reuters10k_sdae_weights.pt"
         idec = IDEC(input_dim=2000, z_dim=10, n_clusters=4,
                     encodeLayer=[500, 500, 2000], decodeLayer=[2000, 500, 500], activation="relu", dropout=0)
-
-    print(idec)
-
-    ml_ind1, ml_ind2, cl_ind1, cl_ind2 = np.array([]), np.array([]), np.array([]), np.array([])
-    anchor, positive, negative = np.array([]), np.array([]), np.array([])
     if args.use_pretrain:
         idec.load_model(args.pretrain)
+        
+    # Print netowrk structure
+    print(idec)
 
+    # Construct Constraints
+    ml_ind1, ml_ind2, cl_ind1, cl_ind2 = np.array([]), np.array([]), np.array([]), np.array([])
+    anchor, positive, negative = np.array([]), np.array([]), np.array([])
+    
+    # Provide instance guidance based on k-means results. High confidence (1) for correct instances.
+    # Low confidence (0.1) for incorrect instances since k-means + AE does not achieve good results.
     latent = idec.encodeBatch(X).cpu().numpy()
     kmeans = KMeans(10, n_init=20)
     y_pred = kmeans.fit_predict(latent)
-    # Provide instance guidance based on k-means results. High confidence(1) for correct instances.
-    # Low confidence(0.1) for incorrect instances since k-means + AE does not achieve good results.
     instance_guidance = detect_wrong(y.cpu().numpy(), y_pred)
     instance_guidance = torch.tensor(instance_guidance, dtype=torch.float32).cuda()
     use_global = False
+    
+    # Train the network
     train_acc, train_nmi, epo = idec.fit(anchor, positive, negative, ml_ind1, ml_ind2, cl_ind1, cl_ind2, instance_guidance, use_global,  ml_penalty, cl_penalty, X, y,
                              lr=args.lr, batch_size=args.batch_size, num_epochs=args.epochs,
                              update_interval=args.update_interval, tol=1*1e-3)
+    
+    # Make prediction
     test_acc, test_nmi = idec.predict(test_X, test_y)
 
+    # Report results
     print("Training Accuracy:", train_acc)
     print("Training NMI;", train_nmi)
     print("Training Epochs:", epo)
