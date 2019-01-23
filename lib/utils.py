@@ -2,6 +2,9 @@
     - get_mean_and_std: calculate the mean and std value of dataset.
     - msr_init: net parameter initialization.
     - progress_bar: progress bar mimic xlua.progress.
+    
+Acknowledgement: this file is modified based on the work 
+from https://github.com/eelxpeng/dec-pytorch
 '''
 import os
 import sys
