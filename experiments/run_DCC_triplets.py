@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     # Construct constraints
     ml_ind1, ml_ind2, cl_ind1, cl_ind2 = np.array([]), np.array([]), np.array([]), np.array([])
-    anchor, positive, negative = generate_mnist_triplets(y, 3600)
+    anchor, positive, negative = generate_mnist_triplets(y, 6000)
     instance_guidance = torch.zeros(X.shape[0]).cuda()
     use_global = False
 
