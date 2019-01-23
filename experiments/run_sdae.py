@@ -1,3 +1,7 @@
+"""
+Acknowledgement: this file is modified based on the work 
+from https://github.com/eelxpeng/dec-pytorch
+"""
 import sys
 
 sys.path.append("..")
@@ -18,9 +22,7 @@ if __name__ == "__main__":
                         help='number of epochs to train (default: 500)')
     args = parser.parse_args()
 
-    # according to the released code, mnist data is multiplied by 0.02
-    # 255*0.02 = 5.1. transforms.ToTensor() coverts 255 -> 1.0
-    # so add a customized Scale transform to multiple by 5.1
+    # Load data for pre-training
     train_loader = torch.utils.data.DataLoader(
         MNIST('./dataset/mnist', train=True, download=True),
         batch_size=args.batch_size, shuffle=True, num_workers=0)
@@ -31,8 +33,14 @@ if __name__ == "__main__":
     sdae = StackedDAE(input_dim=784, z_dim=10, binary=False,
                       encodeLayer=[500, 500, 2000], decodeLayer=[2000, 500, 500], activation="relu",
                       dropout=0)
+    
+    # Print the pre-train model structure
     print(sdae)
     sdae.pretrain(train_loader, test_loader, lr=args.lr, batch_size=args.batch_size,
                   num_epochs=args.pretrainepochs, corrupt=0.2, loss_type="mse")
+    
+    # Train the stacked denoising autoencoder
     sdae.fit(train_loader, test_loader, lr=args.lr, num_epochs=args.epochs, corrupt=0.2, loss_type="mse")
+    
+    # Save the weights as pre-trained model for IDEC/DEC/DCC
     sdae.save_model("model/sdae_mnist_weights.pt")
