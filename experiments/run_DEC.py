@@ -1,3 +1,7 @@
+"""
+Acknowledgement: this file is modified based on the work 
+from https://github.com/eelxpeng/dec-pytorch
+"""
 import sys
 sys.path.append("..")
 import argparse
@@ -18,9 +22,7 @@ if __name__ == "__main__":
                         help='use pre-trained weights')
     args = parser.parse_args()
 
-    # according to the released code, mnist data is multiplied by 0.02
-    # 255*0.02 = 5.1. transforms.ToTensor() coverts 255 -> 1.0
-    # so add a customized Scale transform to multiple by 5.1
+
     mnist_train = MNIST('./dataset/mnist', train=True, download=True)
     mnist_test = MNIST('./dataset/mnist', train=False)
     X = mnist_train.train_data
