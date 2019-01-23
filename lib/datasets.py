@@ -218,6 +218,7 @@ class FashionMNIST(MNIST):
 
 
 class Reuters(data.Dataset):
+    # To download the processed reuters data, please run the script named as "download_data.sh"
     training_file = "reutersidf10k_train.npy"
     test_file = "reutersidf10k_test.npy"
 
