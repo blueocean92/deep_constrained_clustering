@@ -39,7 +39,7 @@ While in `deep_constrained_clustering` folder:
 sh download_model.sh
 ```
 
-#### Step 2: Download Processed Reuters Data
+#### Step 2: Download Processed Reuters Data(optional, MNIST and Fashion is available in torchvision.datasets)
 
 ```
 sh download_data.sh
