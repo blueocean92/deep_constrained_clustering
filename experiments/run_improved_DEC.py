@@ -1,3 +1,7 @@
+"""
+Acknowledgement: this file is modified based on the work 
+from https://github.com/eelxpeng/dec-pytorch
+"""
 import sys
 sys.path.append("..")
 import torch.utils.data
@@ -22,12 +26,15 @@ if __name__ == "__main__":
     parser.add_argument('--use_pretrain', type=bool, default=True)
     args = parser.parse_args()
 
+    # Load data
     mnist_train = MNIST('./dataset/mnist', train=True, download=True)
     mnist_test = MNIST('./dataset/mnist', train=False)
     X = mnist_train.train_data
     y = mnist_train.train_labels
     test_X = mnist_test.test_data
     test_y = mnist_test.test_labels
+    
+    # Set parameters
     ml_penalty, cl_penalty = 0.1, 1
     idec = IDEC(input_dim=784, z_dim=10, n_clusters=10,
                 encodeLayer=[500, 500, 2000], decodeLayer=[2000, 500, 500], activation="relu", dropout=0)
@@ -50,16 +57,19 @@ if __name__ == "__main__":
         args.pretrain="../model/reuters10k_sdae_weights.pt"
         idec = IDEC(input_dim=2000, z_dim=10, n_clusters=4,
                     encodeLayer=[500, 500, 2000], decodeLayer=[2000, 500, 500], activation="relu", dropout=0)
-
-    print(idec)
-    ml_ind1, ml_ind2, cl_ind1, cl_ind2 = np.array([]), np.array([]), np.array([]), np.array([])
-    anchor, positive, negative = np.array([]), np.array([]), np.array([])
     if args.use_pretrain:
         idec.load_model(args.pretrain)
+        
+    # Print network structure
+    print(idec)
+    
+    # Construct constraints (here is the baseline so no constraints are provided).
+    ml_ind1, ml_ind2, cl_ind1, cl_ind2 = np.array([]), np.array([]), np.array([]), np.array([])
+    anchor, positive, negative = np.array([]), np.array([]), np.array([])
     instance_guidance = torch.zeros(X.shape[0]).cuda()
     use_global = False
 
-    # Train the constrained clustering model
+    # Train the clustering model
     train_acc, train_nmi, epo = idec.fit(anchor, positive, negative, ml_ind1, ml_ind2, cl_ind1, cl_ind2, instance_guidance, use_global,  ml_penalty, cl_penalty, X, y,
                              lr=args.lr, batch_size=args.batch_size, num_epochs=args.epochs,
                              update_interval=args.update_interval,tol=1*1e-3)
@@ -67,6 +77,7 @@ if __name__ == "__main__":
     # Test on the test data
     test_acc, test_nmi = idec.predict(test_X, test_y)
 
+    # Print the result
     print("Training Accuracy:", train_acc)
     print("Training NMI;", train_nmi)
     print("Training Epochs:", epo)
