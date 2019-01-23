@@ -62,7 +62,7 @@ if __name__ == "__main__":
     print(idec)
 
     # Construct Constriants
-    ml_ind1, ml_ind2, cl_ind1, cl_ind2 = generate_random_pair(y, 3600)
+    ml_ind1, ml_ind2, cl_ind1, cl_ind2 = generate_random_pair(y, 6000)
     ml_ind1, ml_ind2, cl_ind1, cl_ind2 = transitive_closure(ml_ind1, ml_ind2, cl_ind1, cl_ind2, X.shape[0])
     anchor, positive, negative = np.array([]), np.array([]), np.array([])
     instance_guidance = torch.zeros(X.shape[0]).cuda()
