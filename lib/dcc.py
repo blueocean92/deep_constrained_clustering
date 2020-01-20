@@ -5,12 +5,16 @@ import torch.optim as optim
 from torch.autograd import Variable
 
 import numpy as np
+import os
 import math
 import collections
+import pickle
+import json
+
 from lib.utils import acc
 from sklearn.metrics.cluster import normalized_mutual_info_score
 from sklearn.cluster import KMeans
-
+import pandas as pd
 
 class MSELoss(nn.Module):
     def __init__(self):
@@ -142,6 +146,25 @@ class IDEC(nn.Module):
 
         return torch.mean(triplet_loss)
 
+    def satisfied_constraints(self,ml_ind1,ml_ind2,cl_ind1, cl_ind2,y_pred):
+        
+        if ml_ind1.size == 0 or ml_ind2.size == 0 or cl_ind1.size == 0 or cl_ind2.size == 0:
+            return 1.1
+
+        count = 0
+        satisfied = 0
+        for (i, j) in zip(ml_ind1, ml_ind2):
+            count += 1
+            if y_pred[i] == y_pred[j]:
+                satisfied += 1
+        for (i, j) in zip(cl_ind1, cl_ind2):
+            count += 1
+            if y_pred[i] != y_pred[j]:
+                satisfied += 1
+
+        return float(satisfied)/count
+
+
     def predict(self, X, y):
         use_cuda = torch.cuda.is_available()
         if use_cuda:
@@ -158,7 +181,11 @@ class IDEC(nn.Module):
             final_nmi = normalized_mutual_info_score(y, y_pred)
         return final_acc, final_nmi
 
-    def fit(self,anchor, positive, negative, ml_ind1,ml_ind2,cl_ind1, cl_ind2, mask, use_global, ml_p, cl_p, X,y=None, lr=0.001, batch_size=256, num_epochs=10, update_interval=1, tol=1e-3):
+    def fit(self,anchor, positive, negative, ml_ind1,ml_ind2,cl_ind1, cl_ind2, mask, use_global, ml_p, cl_p, X,y=None, lr=0.001, batch_size=256, num_epochs=10, update_interval=1, tol=1e-3, use_kmeans=True, plotting="",clustering_loss_weight=1):    
+        
+        # save intermediate results for plotting
+        intermediate_results = collections.defaultdict(lambda:{})
+        
         '''X: tensor data'''
         use_cuda = torch.cuda.is_available()
         if use_cuda:
@@ -166,12 +193,22 @@ class IDEC(nn.Module):
         print("=====Training IDEC=======")
         optimizer = optim.Adam(filter(lambda p: p.requires_grad, self.parameters()), lr=lr)
 
-        print("Initializing cluster centers with kmeans.")
-        kmeans = KMeans(self.n_clusters, n_init=20)
-        data = self.encodeBatch(X)
-        y_pred = kmeans.fit_predict(data.data.cpu().numpy())
-        y_pred_last = y_pred
-        self.mu.data.copy_(torch.Tensor(kmeans.cluster_centers_))
+        if use_kmeans:
+            print("Initializing cluster centers with kmeans.")
+            kmeans = KMeans(self.n_clusters, n_init=20)
+            data = self.encodeBatch(X)
+            y_pred = kmeans.fit_predict(data.data.cpu().numpy())
+            y_pred_last = y_pred
+            self.mu.data.copy_(torch.Tensor(kmeans.cluster_centers_))
+        else:
+            # use kmeans to randomly initialize cluster ceters
+            print("Randomly initializing cluster centers.")
+            kmeans = KMeans(self.n_clusters, n_init=1, max_iter=1)
+            data = self.encodeBatch(X)
+            y_pred = kmeans.fit_predict(data.data.cpu().numpy())
+            y_pred_last = y_pred
+            self.mu.data.copy_(torch.Tensor(kmeans.cluster_centers_))
+
         if y is not None:
             y = y.cpu().numpy()
             # print("Kmeans acc: %.5f, nmi: %.5f" % (acc(y, y_pred), normalized_mutual_info_score(y, y_pred)))
@@ -210,18 +247,45 @@ class IDEC(nn.Module):
 
                 if y is not None:
                     print("acc: %.5f, nmi: %.5f" % (acc(y, y_pred), normalized_mutual_info_score(y, y_pred)))
+                    print("satisfied constraints: %.5f"%self.satisfied_constraints(ml_ind1,ml_ind2,cl_ind1, cl_ind2,y_pred))
                     final_acc = acc(y, y_pred)
                     final_nmi = normalized_mutual_info_score(y, y_pred)
                     final_epoch = epoch
 
-                # check stop criterion
-                delta_label = np.sum(y_pred != y_pred_last).astype(np.float32) / num
-                y_pred_last = y_pred
-                if epoch>0 and delta_label < tol:
-                    print('delta_label ', delta_label, '< tol ', tol)
-                    print("Reach tolerance threshold. Stopping training.")
-                    break
+                # save model for plotting
+                if plotting and (epoch in [10,20,30,40] or epoch%50 == 0 or epoch == num_epochs-1):
+                    
+                    df = pd.DataFrame(latent.cpu().numpy())
+                    df["y"] = y
+                    df.to_pickle(os.path.join(plotting,"save_model_%d.pkl"%(epoch)))
+                    
+                    intermediate_results["acc"][str(epoch)] = acc(y, y_pred)
+                    intermediate_results["nmi"][str(epoch)] = normalized_mutual_info_score(y, y_pred)
+                    with open(os.path.join(plotting,"intermediate_results.json"), "w") as fp:
+                        json.dump(intermediate_results, fp)
 
+                # check stop criterion
+                try:
+                    delta_label = np.sum(y_pred != y_pred_last).astype(np.float32) / num
+                    y_pred_last = y_pred
+                    if epoch>0 and delta_label < tol:
+                        print('delta_label ', delta_label, '< tol ', tol)
+                        print("Reach tolerance threshold. Stopping training.")
+
+                        # save model for plotting
+                        if plotting:
+                            
+                            df = pd.DataFrame(latent.cpu().numpy())
+                            df["y"] = y
+                            df.to_pickle(os.path.join(plotting,"save_model_%d.pkl"%epoch))
+                            
+                            intermediate_results["acc"][str(epoch)] = acc(y, y_pred)
+                            intermediate_results["nmi"][str(epoch)] = normalized_mutual_info_score(y, y_pred)
+                            with open(os.path.join(plotting,"intermediate_results.json"), "w") as fp:
+                                json.dump(intermediate_results, fp)
+                        break
+                except:
+                    pass
 
             # train 1 epoch for clustering loss
             train_loss = 0.0
@@ -250,7 +314,7 @@ class IDEC(nn.Module):
                     cluster_loss_val += cluster_loss.data * len(inputs)
                     recon_loss_val += recon_loss.data * len(inputs)
                     instance_constraints_loss_val += instance_constraints_loss.data * len(inputs)
-                    train_loss = cluster_loss_val + recon_loss_val + instance_constraints_loss_val
+                    train_loss = clustering_loss_weight*cluster_loss_val + recon_loss_val + instance_constraints_loss_val
                 else:
                     cluster_loss = self.cluster_loss(target, qbatch)
                     recon_loss = self.recon_loss(inputs, xrecon)
@@ -260,7 +324,7 @@ class IDEC(nn.Module):
                     optimizer.step()
                     cluster_loss_val += cluster_loss.data * len(inputs)
                     recon_loss_val += recon_loss.data * len(inputs)
-                    train_loss = cluster_loss_val + recon_loss_val
+                    train_loss = clustering_loss_weight*cluster_loss_val + recon_loss_val
 
 
             if instance_constraints_loss_val != 0.0:
