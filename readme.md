@@ -59,12 +59,38 @@ To run the pairwise constrained clustering using pre-trained weights (AE feature
 python run_DCC_pairwise.py --data $DATA
 ```
 
-For the `--data` flag which specifies the data set being used. The options are "MNIST", "Fashion" and "Reuters".
+For the `--data` flag which specifies the data set being used, the options are "MNIST", "Fashion" and "Reuters".
 
-To run the pairwise constrained clustering from raw features, do:
+To run the pairwise without constrained clustering from raw features, do:
 ```bash
-python run_DCC_pairwise.py --data $DATA --use_pretrain 'False'
+python run_DCC_pairwise.py --data $DATA --without_pretrain
 ```
+
+To run the pairwise without KMeans initialization, do:
+```bash
+python run_DCC_pairwise.py --data $DATA --without_kmeans
+```
+
+To run the pairwise constrained clustering with noisy pairwise constraints do:
+```bash
+python run_DCC_pairwise.py --data $DATA --noisy $NOISE
+```
+
+For the `--noisy` flag which specifies the noisy degree, the option should be a positive float equal to the ratio of noisy constraints to ground truth constraints.
+
+
+To save data for plotting, do:
+```bash
+python run_DCC_pairwise.py --data $DATA --plotting
+```
+
+This will save the experiment data for plotting in folders under ./plotting
+
+To plot the results, do:
+```bash
+python ./plotting/plot_pairwise.py
+```
+
 
 ###### Option 2: Run Demo Instance Constraints Script
 
