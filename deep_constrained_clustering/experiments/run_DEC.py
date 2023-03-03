@@ -1,8 +1,6 @@
-import sys
-sys.path.append("..")
 import argparse
-from lib.dec import DEC
-from lib.datasets import MNIST
+from ..lib.dec import DEC
+from ..lib.datasets import MNIST
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='DEC MNIST Example')

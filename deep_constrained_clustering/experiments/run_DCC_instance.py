@@ -1,12 +1,10 @@
-import sys
-sys.path.append("..")
 import torch.utils.data
 import numpy as np
 import argparse
-from lib.dcc import IDEC
-from lib.datasets import MNIST, FashionMNIST, Reuters
+from ..lib.dcc import IDEC
+from ..lib.datasets import MNIST, FashionMNIST, Reuters
 from sklearn.cluster import KMeans
-from lib.utils import detect_wrong
+from ..ilib.utils import detect_wrong
 
 
 if __name__ == "__main__":

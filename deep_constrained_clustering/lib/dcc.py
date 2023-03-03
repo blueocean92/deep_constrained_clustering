@@ -11,7 +11,7 @@ import collections
 import pickle
 import json
 
-from lib.utils import acc
+from .utils import acc
 from sklearn.metrics.cluster import normalized_mutual_info_score
 from sklearn.cluster import KMeans
 import pandas as pd

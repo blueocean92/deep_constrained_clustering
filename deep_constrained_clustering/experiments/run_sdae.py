@@ -1,10 +1,7 @@
-import sys
-
-sys.path.append("..")
 import torch.utils.data
 import argparse
-from lib.stackedDAE import StackedDAE
-from lib.datasets import MNIST
+from ..lib.stackedDAE import StackedDAE
+from ..lib.datasets import MNIST
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='VAE MNIST Example')

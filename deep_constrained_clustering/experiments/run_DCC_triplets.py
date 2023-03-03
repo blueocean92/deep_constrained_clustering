@@ -1,11 +1,9 @@
-import sys
-sys.path.append("..")
 import torch.utils.data
 import numpy as np
 import argparse
-from lib.dcc import IDEC
-from lib.datasets import MNIST, FashionMNIST
-from lib.utils import generate_mnist_triplets, generate_triplet_constraints_continuous
+from ..lib.dcc import IDEC
+from ..lib.datasets import MNIST, FashionMNIST
+from ..lib.utils import generate_mnist_triplets, generate_triplet_constraints_continuous
 
 
 if __name__ == "__main__":

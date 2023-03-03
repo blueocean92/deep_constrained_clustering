@@ -1,10 +1,8 @@
-import sys
-sys.path.append("..")
 import torch.utils.data
 import numpy as np
 import argparse
-from lib.dcc import IDEC
-from lib.datasets import MNIST, FashionMNIST, Reuters
+from ..lib.dcc import IDEC
+from ..lib.datasets import MNIST, FashionMNIST, Reuters
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='IDEC MNIST Example')

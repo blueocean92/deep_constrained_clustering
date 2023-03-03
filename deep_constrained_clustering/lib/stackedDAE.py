@@ -9,9 +9,9 @@ from torch.autograd import Variable
 
 import numpy as np
 import math
-from lib.utils import Dataset, masking_noise
-from lib.ops import MSELoss, BCELoss
-from lib.denoisingAutoencoder import DenoisingAutoencoder
+from .utils import Dataset, masking_noise
+from .ops import MSELoss, BCELoss
+from .denoisingAutoencoder import DenoisingAutoencoder
 
 def buildNetwork(layers, activation="relu", dropout=0):
     net = []

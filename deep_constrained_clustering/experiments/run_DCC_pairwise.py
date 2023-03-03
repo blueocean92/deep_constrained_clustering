@@ -1,15 +1,13 @@
-import sys
 import os
-sys.path.append("..")
 import torch.utils.data
 import numpy as np
 import pandas as pd
 import argparse
 import time
 
-from lib.dcc import IDEC
-from lib.datasets import MNIST, FashionMNIST, Reuters
-from lib.utils import transitive_closure, generate_random_pair
+from ..lib.dcc import IDEC
+from ..lib.datasets import MNIST, FashionMNIST, Reuters
+from ..lib.utils import transitive_closure, generate_random_pair
 
 
 if __name__ == "__main__":
