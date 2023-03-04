@@ -9,8 +9,8 @@ from torch.autograd import Variable
 
 import numpy as np
 import math
-from lib.utils import Dataset, masking_noise
-from lib.ops import MSELoss, BCELoss
+from .utils import Dataset, masking_noise
+from .ops import MSELoss, BCELoss
 
 def adjust_learning_rate(init_lr, optimizer, epoch):
     lr = init_lr * (0.1 ** (epoch//100))

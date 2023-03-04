@@ -9,7 +9,7 @@ from torch.autograd import Variable
 
 import numpy as np
 import math
-from lib.utils import acc
+from .utils import acc
 from sklearn.metrics.cluster import normalized_mutual_info_score
 from sklearn.cluster import KMeans
 

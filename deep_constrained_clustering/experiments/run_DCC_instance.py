@@ -1,13 +1,14 @@
-import sys
-sys.path.append("..")
 import torch.utils.data
 import numpy as np
 import argparse
-from lib.dcc import IDEC
-from lib.datasets import MNIST, FashionMNIST, Reuters
+from ..lib.dcc import IDEC
+from ..lib.datasets import MNIST, FashionMNIST, Reuters
+from sklearn.cluster import KMeans
+from ..ilib.utils import detect_wrong
+
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='IDEC MNIST Example')
+    parser = argparse.ArgumentParser(description='Instance Difficulty Constrained Clustering Example')
     parser.add_argument('--lr', type=float, default=0.001, metavar='N',
                         help='learning rate for training (default: 0.001)')
     parser.add_argument('--batch-size', type=int, default=256, metavar='N',
@@ -32,6 +33,7 @@ if __name__ == "__main__":
     
     # Set parameters
     ml_penalty, cl_penalty = 0.1, 1
+    
     idec = IDEC(input_dim=784, z_dim=10, n_clusters=10,
                 encodeLayer=[500, 500, 2000], decodeLayer=[2000, 500, 500], activation="relu", dropout=0)
     if args.data == "Fashion":
@@ -56,24 +58,31 @@ if __name__ == "__main__":
     if args.use_pretrain:
         idec.load_model(args.pretrain)
         
-    # Print network structure
+    # Print netowrk structure
     print(idec)
-    
-    # Construct constraints (here is the baseline so no constraints are provided).
+
+    # Construct Constraints
     ml_ind1, ml_ind2, cl_ind1, cl_ind2 = np.array([]), np.array([]), np.array([]), np.array([])
     anchor, positive, negative = np.array([]), np.array([]), np.array([])
-    instance_guidance = torch.zeros(X.shape[0]).cuda()
+    
+    # Provide instance guidance based on k-means results. High confidence (1) for correct instances.
+    # Low confidence (0.1) for incorrect instances since k-means + AE does not achieve good results.
+    latent = idec.encodeBatch(X).cpu().numpy()
+    kmeans = KMeans(10, n_init=20)
+    y_pred = kmeans.fit_predict(latent)
+    instance_guidance = detect_wrong(y.cpu().numpy(), y_pred)
+    instance_guidance = torch.tensor(instance_guidance, dtype=torch.float32).cuda()
     use_global = False
-
-    # Train the clustering model
+    
+    # Train the network
     train_acc, train_nmi, epo = idec.fit(anchor, positive, negative, ml_ind1, ml_ind2, cl_ind1, cl_ind2, instance_guidance, use_global,  ml_penalty, cl_penalty, X, y,
                              lr=args.lr, batch_size=args.batch_size, num_epochs=args.epochs,
-                             update_interval=args.update_interval,tol=1*1e-3)
-
-    # Test on the test data
+                             update_interval=args.update_interval, tol=1*1e-3)
+    
+    # Make prediction
     test_acc, test_nmi = idec.predict(test_X, test_y)
 
-    # Print the result
+    # Report results
     print("Training Accuracy:", train_acc)
     print("Training NMI;", train_nmi)
     print("Training Epochs:", epo)
